@@ -1,0 +1,344 @@
+--------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\fbm221\Desktop\Mardhani_Technical Appendix.log
+  log type:  text
+ opened on:  12 Dec 2014, 20:36:07
+
+. 
+. /*     Project:          Lab Project 2014   
+>        Purpose:          Technical Appendix
+>        Author:           Faria Mardhani
+>        Date:             November 6, 2014
+>        Notes:            Aid Policy
+> */
+. 
+. clear
+
+. use "C:\Users\fbm221\Desktop\aidcorruption.dta" 
+
+. 
+. ***************
+. * WEEK ONE
+. ***************
+. 
+. /* Question 4a and 4b: Identifying Variables
+> Dependent Variable: aid_cap_constUS
+> Independent Variable: Corruption 
+> Project Question: What is the effect of corruption level on foreign aid (per c
+> apita in constant U.S. dollars) received by a country?*/
+. 
+. * Question 4c: Summarizing Variables (Dependent Variable)
+. * Generate new variable and recode variable (getting rid of negative values)
+. gen aid=aid_cap_constUS
+(60 missing values generated)
+
+. recode aid min/0=.
+(aid: 6 changes made)
+
+. sum aid, detail
+
+                             aid
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     1.080957       .2576295
+ 5%     1.805517       1.080957
+10%       5.2475       1.093892       Obs                 129
+25%     14.85691       1.367755       Sum of Wgt.         129
+
+50%     30.18478                      Mean            64.2312
+                        Largest       Std. Dev.      125.7568
+75%     65.79402       343.1492
+90%     140.3699       386.1684       Variance       15814.76
+95%     181.5021       838.4113       Skewness       5.537572
+99%     838.4113       1023.007       Kurtosis       38.50066
+
+. * The mean is $64.2312
+. * The median is $30.18478
+. * The standard deviation is $125.7568
+. * The IQR is $50.93711
+. /* Interesting cases:
+> Mexico, Nigeria, Brazil, and Venezuela receive the lowest amounts of aid (unde
+> r $2 per capita). 
+> Micronesia and Marshallis receive the largest amounts of aid, $838 and $1023 p
+> er capita respectively. */
+. 
+. 
+. * Question 4c: Summarizing Variables (Independent Variable)
+. sum corruption, detail
+
+        Corruption (0=least corrupt; 6=most corrupt)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            1              0
+10%            1              0       Obs                 136
+25%            2              0       Sum of Wgt.         136
+
+50%            3                      Mean           2.897059
+                        Largest       Std. Dev.      1.283972
+75%            4              5
+90%            4              5       Variance       1.648584
+95%            5              5       Skewness      -.3130247
+99%            5              6       Kurtosis       2.649955
+
+. * The mean is 2.897059
+. * The median is 3
+. * The standard deviation is 1.283972
+. * The IQR is 2
+. /* Note: Corruption is a categorical, not numerical variable. Therefore, the 
+> median and IQR aren't necessarily significant for our work. */ 
+. /* Interesting cases:
+> Canada, Iceland, Finland, Denmark, Sweden, the Netherlands, and Portugal have 
+> the lowest degrees of corruption. Niger is categorized as the most corrupt
+> country in this data. */   
+. 
+. * Question 4d: Histograms
+. 
+. hist aid_cap_constUS, frequency title(Distribution of Countries by Aid Per Cap
+> ita)
+(bin=11, start=-6.7856236, width=93.617546)
+
+. /* Notes: Aid (per capita in constant dollars) has a unimodal, right-skewed di
+> stribution. A majority of countries receive 
+> less than $200 in aid per capita. */ 
+. 
+. hist corruption, frequency title (Distribution of Countries by Corruption Leve
+> l) width(1) xlabel(0 1 2 3 4 5 6 7)
+(bin=6, start=0, width=1)
+
+. /* Notes: Corruption (by level) has a slightly left-skewed unimodal distributi
+> on. Most countries fall in the middle of the distribution 
+> (levels of corruption between 2 and 4), while only one country, Niger has been
+>  assigned the highest level of corruption (6). */
+. 
+. * Visualize Correlation:
+. scatter aid corruption
+
+. * Scatterplot is very compressed, perhaps due to statistical outliers
+. 
+. * Identify Presence of Statistical Outliers:
+. graph box aid if aid<300, marker(1, mlabel(aid))
+
+. * Countries with aid per capita > $131.3103 are statistical outliers
+. /* Remove 14 observations that are statistical outliers: 
+> Samoa, St. Vincent, Nicaragua, Israel, Antigua, Seychellss, Belize, Kyrgyzstan
+> , Sao Tomeepr, Vanuatu, C Verde Is, Bosnia-Herz, Micornesia,
+> Marshallis. */
+. gen naid=aid if aid<130
+(81 missing values generated)
+
+. 
+. *Visualize Correlation After Controlling for Outliers
+. scatter naid corruption
+
+. 
+. ***************
+. * WEEK TWO
+. ***************
+. 
+. * Question 2
+. corr naid corruption
+(obs=86)
+
+             |     naid corrup~n
+-------------+------------------
+        naid |   1.0000
+  corruption |  -0.1529   1.0000
+
+
+. /* Correlation = -0.1529
+> There is a weak negative relationship between aid and corruption */
+. 
+. * Question 3
+. * aid per capita in constant U.S. dollars = a + b*(level of corruption)
+. 
+. * Question 4
+. regress naid corruption
+
+      Source |       SS       df       MS              Number of obs =      86
+-------------+------------------------------           F(  1,    84) =    2.01
+       Model |  1559.80656     1  1559.80656           Prob > F      =  0.1600
+    Residual |  65196.1699    84  776.144879           R-squared     =  0.0234
+-------------+------------------------------           Adj R-squared =  0.0117
+       Total |  66755.9764    85  785.364429           Root MSE      =  27.859
+
+------------------------------------------------------------------------------
+        naid |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  corruption |  -4.368866   3.081802    -1.42   0.160    -10.49737    1.759635
+       _cons |   43.04619   10.19955     4.22   0.000     22.76327    63.32911
+------------------------------------------------------------------------------
+
+. * Intercept: 43.04619
+. * Slope: -4.368866
+. * Observations: 86
+. * R-squared 0.0234
+. 
+. * Question 5
+. /* Regression line: 
+> aid per capita in constant U.S. dollars = 43.04619 - 4.368866*(level of corrup
+> tion)*/
+. /* The slope of corruption is -4.368866, therefore, for each unit increase in 
+> level of corruption, 
+> there is a 4.37 dollar decrease in aid per capita in constant U.S. dollars. 
+> R-squared in this regression is only 0.0234, meaning that the level of corrupt
+> ion only explains 2.34% of the variance in aid (per capita, constant). */
+. 
+. * Question 6
+. twoway (scatter naid corruption) (lfit naid corruption), title(Correlation Bet
+> ween Level of Corruption and Aid Per Capita Received) xtitle(Level of Corrupti
+> on) ytitle(Aid Per Capita)
+
+. 
+. ***************
+. * WEEK THREE
+. ***************
+. 
+. /* Question 2
+> One potential counfounding variable is W (Winning Coalition Size). In countrie
+> s with small winning coalitions (relative to selectorate size), leaders are mo
+> re likely
+> to distribute "winnings" to their winning coalition as rewards. Therefore, in 
+> such countries, leaders may solicit more foreign aid that will then be distrib
+> uted 
+> to the winning coalition instead of the general public. Therefore, in countrie
+> s with small winning coalitions (relative to selecotrates), we might see highe
+> r 
+> amounts of foreign aid received. We might expect:
+> 1) A moderate negative correlation between winning coalition size and corrupti
+> on.
+> 2) A weak to moderate negative correlation between winning coalition size and 
+> aid per capita, constant. 
+> */
+. 
+. * Question 3
+. pwcorr naid corruption W
+
+             |     naid corrup~n        W
+-------------+---------------------------
+        naid |   1.0000 
+  corruption |  -0.1529   1.0000 
+           W |   0.0462  -0.5235   1.0000 
+
+. 
+. * Corr corruption naid = -0.1529 (Weak, negative relationship)
+. * Corr W naid = 0.0462 (Weak, positive relationship)
+. * Corr W corruption = -0.5235 (Moderate, negative relationship)
+. 
+. * Question 3
+. graph matrix naid W corruption, half
+
+. 
+. * Question 4
+. regress naid W corruption
+
+      Source |       SS       df       MS              Number of obs =      86
+-------------+------------------------------           F(  2,    83) =    1.02
+       Model |  1595.25849     2  797.629243           Prob > F      =  0.3665
+    Residual |  65160.7179    83  785.068891           R-squared     =  0.0239
+-------------+------------------------------           Adj R-squared =  0.0004
+       Total |  66755.9764    85  785.364429           Root MSE      =  28.019
+
+------------------------------------------------------------------------------
+        naid |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           W |  -2.763798    13.0059    -0.21   0.832      -28.632    23.10441
+  corruption |  -4.542095   3.204875    -1.42   0.160    -10.91646    1.832273
+       _cons |   45.34555   14.90997     3.04   0.003     15.69023    75.00087
+------------------------------------------------------------------------------
+
+. * Intercept = 45.34555
+. * Corruption Slope = -4.542095 
+. * W Slope = -2.763798
+. 
+. * Question 6
+. * aid per capita in constant dollars = 35.77034 - 4.542095(corruption) - 2.763
+> 798(size of winning coalition)
+. 
+. * Question 7
+. /* Corruption: For each unit increase in the level of corruption, there is 4.5
+> 4 unit decrease in aid/capita.
+> * W: For each unit increase in the size of the winning coalition, there is a 2
+> .76 unit decrease in aid/capita.
+> * R-Squared: The adjusted R-Squared=0.0004, which means that even together, le
+> vel of corruption and size of the winning coalition explain 
+> only 0.04% of the variation in aid per capita in constant dollars received by 
+> a country from the U.S. */
+. 
+. * Question 8
+. /* Slope for corruption is larger (in absolute terms) than it was in the bivar
+> iate case.(Previously = -4.37, Now = -4.54). After controlling
+> for winning coalition size, we see that corruption still has a negative effect
+>  on aid per capita received by countries. In fact, after
+> controlling for winning coalition size, that effect is larger, implying that m
+> ore corrupt countries actually receive less aid than less
+> corrupt ones. */
+. 
+. ***************
+. * WEEK FOUR
+. ***************
+. 
+. * Question 2
+. regress naid corruption
+
+      Source |       SS       df       MS              Number of obs =      86
+-------------+------------------------------           F(  1,    84) =    2.01
+       Model |  1559.80656     1  1559.80656           Prob > F      =  0.1600
+    Residual |  65196.1699    84  776.144879           R-squared     =  0.0234
+-------------+------------------------------           Adj R-squared =  0.0117
+       Total |  66755.9764    85  785.364429           Root MSE      =  27.859
+
+------------------------------------------------------------------------------
+        naid |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  corruption |  -4.368866   3.081802    -1.42   0.160    -10.49737    1.759635
+       _cons |   43.04619   10.19955     4.22   0.000     22.76327    63.32911
+------------------------------------------------------------------------------
+
+. * Slope coefficient of corruption is not significantly different from 0 at 0.0
+> 5 level.
+. * P-value=0.160 > 0.05
+. * 95% Confidence Interval: (-10.49737, 1.759635)
+. 
+. * Question 3
+. regress naid W corruption
+
+      Source |       SS       df       MS              Number of obs =      86
+-------------+------------------------------           F(  2,    83) =    1.02
+       Model |  1595.25849     2  797.629243           Prob > F      =  0.3665
+    Residual |  65160.7179    83  785.068891           R-squared     =  0.0239
+-------------+------------------------------           Adj R-squared =  0.0004
+       Total |  66755.9764    85  785.364429           Root MSE      =  28.019
+
+------------------------------------------------------------------------------
+        naid |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+           W |  -2.763798    13.0059    -0.21   0.832      -28.632    23.10441
+  corruption |  -4.542095   3.204875    -1.42   0.160    -10.91646    1.832273
+       _cons |   45.34555   14.90997     3.04   0.003     15.69023    75.00087
+------------------------------------------------------------------------------
+
+. * Slope coefficient of corruption is not significantly different from 0 at 0.0
+> 5 level.
+. * P-value=0.160 > 0.05
+. * 95% Confidence Interval: (-10.91646, 1.832273)
+. /* The significance level of the slope of corruption has not changed since the
+>  introduction of the W variable. Therefore, after controlling
+> for the size of the winning coalition, we do not find that level of corruption
+>  is statistically significant in the determination of how much 
+> aid a country will receive. */
+. 
+. /* Slope coefficient of W is not significantly different from 0 at 0.05 level;
+>  therefore W also does not seem like a statistically significant
+> determinant of the amount of aid a country will receive. */
+. * P-Value=0.832 > 0.05
+. * 95% Confidence Interval: (-28.632, 23.10441)
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  C:\Users\fbm221\Desktop\Mardhani_Technical Appendix.log
+  log type:  text
+ closed on:  12 Dec 2014, 20:36:09
+--------------------------------------------------------------------------------
